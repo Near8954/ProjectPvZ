@@ -2,15 +2,16 @@ import pygame
 import os
 import sys
 
-
 size = WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode(size)
 FPS = 50
 clock = pygame.time.Clock()
 
+
 def terminate():
     pygame.quit()
     sys.exit()
+
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -20,6 +21,7 @@ def load_image(name, colorkey=None):
         sys.exit()
     image = pygame.image.load(fullname)
     return image
+
 
 def start_screen():
     intro_text = ["ЗАСТАВКА", "",
@@ -39,7 +41,7 @@ def start_screen():
         intro_rect.x = 10
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
-        
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -50,6 +52,18 @@ def start_screen():
             pygame.display.flip()
             clock.tick(FPS)
 
+
+def play():
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                print(f'click:{x, y}')
+        screen.fill((0, 0, 0))
+        clock.tick(fps)
+        pygame.display.flip()
 
 
 if __name__ == '__main__':
@@ -65,14 +79,4 @@ if __name__ == '__main__':
     is_circle = False
     clock = pygame.time.Clock()
     start_screen()
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = event.pos
-                print(f'click:{x, y}')
-        screen.fill((0, 0, 0))
-        clock.tick(fps)
-        pygame.display.flip()
-    pygame.quit()
+    play()
