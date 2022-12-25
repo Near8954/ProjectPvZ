@@ -88,6 +88,8 @@ def play():
     is_circle = False
     clock = pygame.time.Clock()
     main_board = Board(10,5)
+    background_grass = load_image('background_grass.png')
+    screen.fill((0, 0, 0))
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -95,8 +97,8 @@ def play():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 print(f'click:{x, y}')
+        screen.blit(background_grass, (50,100))
 
-        screen.fill((0, 0, 0))
         clock.tick(fps)
         main_board.render(screen)
         pygame.display.flip()
