@@ -8,15 +8,26 @@ FPS = 50
 clock = pygame.time.Clock()
 
 
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    # если файл не существует, то выходим
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
+
+
 class Board:
     # создание поля
     def __init__(self, width, height):
         self.width = width
         self.height = height
         self.board = [[0] * width for _ in range(height)]
+
         # значения по умолчанию
         self.left = 50
-        self.top = 100
+        self.top = 200
         self.cell_size = 70
 
     # настройка внешнего вида
@@ -29,25 +40,43 @@ class Board:
         for y in range(self.height):
             for x in range(self.width):
                 pygame.draw.rect(screen, (255, 255, 255),
-                                 ((self.left + x * self.cell_size,
-                                   self.top + y * self.cell_size),
-                                  (self.cell_size, self.cell_size)),
-                                 True)
+                                    ((self.left + x * self.cell_size,
+                                    self.top + y * self.cell_size),
+                                    (self.cell_size, self.cell_size)),
+                                    True)
+
+    def get_cell(self, mouse_pos):
+        x, y = mouse_pos
+        x -= self.left
+        y -= self.top
+        if (x <= 0 or y <= 0 or x >= self.width * self.cell_size
+                or y >= self.height * self.cell_size):
+            return None
+
+        return x // self.cell_size, y // self.cell_size
+
+    def on_click(self, cell_coords):
+        print(cell_coords)
+
+    def get_click(self, mouse_pos):
+        cell = self.get_cell(mouse_pos)
+        self.on_click(cell)
+
+
+
+
+class Sunflower(pygame.sprite.Sprite):
+    image = load_image('PvZ/1/sunflower.png')
+
+    def __init__(self, x, y):
+        super().__init__()
+
+
 
 
 def terminate():
     pygame.quit()
     sys.exit()
-
-
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    # если файл не существует, то выходим
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    return image
 
 
 def start_screen():
@@ -87,17 +116,17 @@ def play():
     fps = 60
     is_circle = False
     clock = pygame.time.Clock()
-    main_board = Board(10,5)
+    main_board = Board(10, 5)
     background_grass = load_image('background_grass.png')
     screen.fill(pygame.Color('grey'))
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = event.pos
-                print(f'click:{x, y}')
-        screen.blit(background_grass, (50,100))
+                main_board.get_click(event.pos)
+        screen.blit(background_grass, (50, 200))
 
         clock.tick(fps)
         main_board.render(screen)
