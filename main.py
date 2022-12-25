@@ -8,6 +8,33 @@ FPS = 50
 clock = pygame.time.Clock()
 
 
+class Board:
+    # создание поля
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.board = [[0] * width for _ in range(height)]
+        # значения по умолчанию
+        self.left = 50
+        self.top = 100
+        self.cell_size = 70
+
+    # настройка внешнего вида
+    def set_view(self, left, top, cell_size):
+        self.left = left
+        self.top = top
+        self.cell_size = cell_size
+
+    def render(self, screen):
+        for y in range(self.height):
+            for x in range(self.width):
+                pygame.draw.rect(screen, (255, 255, 255),
+                                 ((self.left + x * self.cell_size,
+                                   self.top + y * self.cell_size),
+                                  (self.cell_size, self.cell_size)),
+                                 True)
+
+
 def terminate():
     pygame.quit()
     sys.exit()
@@ -54,6 +81,13 @@ def start_screen():
 
 
 def play():
+    running = True
+    v = 5  # пикселей в секунду
+    r = 0
+    fps = 60
+    is_circle = False
+    clock = pygame.time.Clock()
+    main_board = Board(10,5)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -61,8 +95,10 @@ def play():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 print(f'click:{x, y}')
+
         screen.fill((0, 0, 0))
         clock.tick(fps)
+        main_board.render(screen)
         pygame.display.flip()
 
 
@@ -72,11 +108,5 @@ if __name__ == '__main__':
     size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
 
-    running = True
-    v = 5  # пикселей в секунду
-    r = 0
-    fps = 60
-    is_circle = False
-    clock = pygame.time.Clock()
     start_screen()
     play()
