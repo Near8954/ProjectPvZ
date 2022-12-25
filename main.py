@@ -89,7 +89,7 @@ def play():
     clock = pygame.time.Clock()
     main_board = Board(10,5)
     background_grass = load_image('background_grass.png')
-    screen.fill((0, 0, 0))
+    screen.fill(pygame.Color('grey'))
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
