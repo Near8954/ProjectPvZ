@@ -6,6 +6,7 @@ size = WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode(size)
 FPS = 50
 clock = pygame.time.Clock()
+all_sprites = pygame.sprite.Group()
 
 
 def load_image(name, colorkey=None):
@@ -18,16 +19,24 @@ def load_image(name, colorkey=None):
     return image
 
 
+plants_images = {'sunflower': pygame.transform.scale(load_image('PvZ/1/sunflower.png'), (70, 70)),
+                 'windflower': pygame.transform.scale(load_image('PvZ/2/windflower.png'), (70, 70)),
+                 'peasflower': pygame.transform.scale(load_image('PvZ/3/peasflower.png'), (70, 70)),
+                 'fireflower': [pygame.transform.scale(load_image('PvZ/4/fireflower_active.png'), (70, 70)),
+                                pygame.transform.scale(load_image('PvZ/4/fireflower_inactive.png'), (70, 70))],
+                 'cactus': pygame.transform.scale(load_image('PvZ/5/cactus.png'), (70, 70))}
+
+
 class Board:
     # создание поля
-    def __init__(self, width, height):
+    def __init__(self, width, height, left, top):
         self.width = width
         self.height = height
         self.board = [[0] * width for _ in range(height)]
 
         # значения по умолчанию
-        self.left = 50
-        self.top = 200
+        self.left = left
+        self.top = top
         self.cell_size = 70
 
     # настройка внешнего вида
@@ -60,19 +69,86 @@ class Board:
 
     def get_click(self, mouse_pos):
         cell = self.get_cell(mouse_pos)
-        self.on_click(cell)
+        return cell
 
     def plant(self, obj, coords):
         self.board[coords[0]][coords[1]] = obj
 
 
+class ChoiceBoard(Board):
+    def put_plants(self, plants):
+        self.map = {(0, 0): plants[0], (1, 0): plants[1], (2, 0): plants[2], (3, 0): plants[3],
+                    (4, 0): plants[4]}
+        self.plants = {(0, 0): 'sunflower', (1, 0): 'windflower', (2, 0): 'peasflower', (3, 0): 'fireflower',
+                       (4, 0): 'cactus'}
+
+    def render(self, screen):
+        for y in range(self.height):
+            for x in range(self.width):
+                pygame.draw.rect(screen, (255, 255, 255),
+                                 ((self.left + x * self.cell_size,
+                                   self.top + y * self.cell_size),
+                                  (self.cell_size, self.cell_size)),
+                                 True)
+                screen.blit(self.map[(x, y)], (50 + x * 70, 20))
+
+    def choose_plant(self, coords):
+        self.current_plant = self.plants[coords]
+        return self.current_plant
+
+
 class Sunflower(pygame.sprite.Sprite):
-    image = load_image('PvZ/1/sunflower.png')
-    image = pygame.transform.scale(image,(70,70))
+    image = plants_images['sunflower']
 
     def __init__(self, x, y):
         super().__init__()
         self.image = Sunflower.image
+        self.rect = self.image.get_rect()
+        self.rect.x = 50 + x * 70
+        self.rect.y = 200 + y * 70
+
+
+class Windflower(pygame.sprite.Sprite):
+    image = plants_images['windflower']
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = Windflower.image
+        self.rect = self.image.get_rect()
+        self.rect.x = 50 + x * 70
+        self.rect.y = 200 + y * 70
+
+
+class Peasflower(pygame.sprite.Sprite):
+    image = plants_images['peasflower']
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = Peasflower.image
+        self.rect = self.image.get_rect()
+        self.rect.x = 50 + x * 70
+        self.rect.y = 200 + y * 70
+
+
+class Fireflower(pygame.sprite.Sprite):
+    image_inactive = plants_images['fireflower'][1]
+    image_active = plants_images['fireflower'][0]
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = Fireflower.image_inactive
+
+        self.rect = self.image_inactive.get_rect()
+        self.rect.x = 50 + x * 70
+        self.rect.y = 200 + y * 70
+
+
+class Cactus(pygame.sprite.Sprite):
+    image = plants_images['cactus']
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = Cactus.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
@@ -113,28 +189,55 @@ def start_screen():
             clock.tick(FPS)
 
 
+def plant(name, x, y):
+    if name == 'sunflower':
+        plant = Sunflower(x, y)
+    elif name == 'windflower':
+        plant = Windflower(x, y)
+    elif name == 'peasflower':
+        plant = Peasflower(x, y)
+    elif name == 'fireflower':
+        plant = Fireflower(x, y)
+    elif name == 'cactus':
+        plant = Cactus(x, y)
+    all_sprites.add(plant)
+
+
 def play():
     running = True
     fps = 60
-    all_sprites = pygame.sprite.Group()
+
     start_sunflower = Sunflower(0, 2)
     all_sprites.add(start_sunflower)
     clock = pygame.time.Clock()
-    main_board = Board(10, 5)
+    main_board = Board(10, 5, 50, 200)
+
+    choice_board = ChoiceBoard(5, 1, 50, 20)
+    choice_board.put_plants([plants_images['sunflower'], plants_images['windflower'], plants_images['peasflower'],
+                             plants_images['fireflower'][0], plants_images['cactus']])
     background_grass = load_image('background_grass.png')
     screen.fill(pygame.Color('grey'))
     main_board.plant(start_sunflower, (0, 2))
+    current_plant = None
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                main_board.get_click(event.pos)
+                main_board_click = main_board.get_click(event.pos)
+                choice_board_click = choice_board.get_click(event.pos)
+                if choice_board_click is not None:
+                    current_plant = choice_board.choose_plant(choice_board_click)
+                    print(current_plant)
+                if main_board_click is not None:
+                    plant(current_plant, main_board_click[0], main_board_click[1])
+
         screen.blit(background_grass, (50, 200))
         all_sprites.update()
         all_sprites.draw(screen)
         clock.tick(fps)
         main_board.render(screen)
+        choice_board.render(screen)
         pygame.display.flip()
 
 
