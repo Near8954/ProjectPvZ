@@ -40,10 +40,10 @@ class Board:
         for y in range(self.height):
             for x in range(self.width):
                 pygame.draw.rect(screen, (255, 255, 255),
-                                    ((self.left + x * self.cell_size,
-                                    self.top + y * self.cell_size),
-                                    (self.cell_size, self.cell_size)),
-                                    True)
+                                 ((self.left + x * self.cell_size,
+                                   self.top + y * self.cell_size),
+                                  (self.cell_size, self.cell_size)),
+                                 True)
 
     def get_cell(self, mouse_pos):
         x, y = mouse_pos
@@ -62,16 +62,20 @@ class Board:
         cell = self.get_cell(mouse_pos)
         self.on_click(cell)
 
-
+    def plant(self, obj, coords):
+        self.board[coords[0]][coords[1]] = obj
 
 
 class Sunflower(pygame.sprite.Sprite):
     image = load_image('PvZ/1/sunflower.png')
+    image = pygame.transform.scale(image,(70,70))
 
     def __init__(self, x, y):
         super().__init__()
-
-
+        self.image = Sunflower.image
+        self.rect = self.image.get_rect()
+        self.rect.x = 50 + x * 70
+        self.rect.y = 200 + y * 70
 
 
 def terminate():
@@ -111,15 +115,15 @@ def start_screen():
 
 def play():
     running = True
-    v = 5  # пикселей в секунду
-    r = 0
     fps = 60
-    is_circle = False
+    all_sprites = pygame.sprite.Group()
+    start_sunflower = Sunflower(0, 2)
+    all_sprites.add(start_sunflower)
     clock = pygame.time.Clock()
     main_board = Board(10, 5)
     background_grass = load_image('background_grass.png')
     screen.fill(pygame.Color('grey'))
-
+    main_board.plant(start_sunflower, (0, 2))
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -127,7 +131,8 @@ def play():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 main_board.get_click(event.pos)
         screen.blit(background_grass, (50, 200))
-
+        all_sprites.update()
+        all_sprites.draw(screen)
         clock.tick(fps)
         main_board.render(screen)
         pygame.display.flip()
