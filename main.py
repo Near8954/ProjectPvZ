@@ -32,7 +32,7 @@ class Board:
     def __init__(self, width, height, left, top):
         self.width = width
         self.height = height
-        self.board = [[0] * width for _ in range(height)]
+        self.board = [[0] * height for _ in range(width)]
 
         # значения по умолчанию
         self.left = left
@@ -73,6 +73,11 @@ class Board:
 
     def plant(self, obj, coords):
         self.board[coords[0]][coords[1]] = obj
+
+    def check_cell(self,x,y):
+        if self.board[x][y]:
+            return False
+        return True
 
 
 class ChoiceBoard(Board):
@@ -189,18 +194,20 @@ def start_screen():
             clock.tick(FPS)
 
 
-def plant(name, x, y):
-    if name == 'sunflower':
-        plant = Sunflower(x, y)
-    elif name == 'windflower':
-        plant = Windflower(x, y)
-    elif name == 'peasflower':
-        plant = Peasflower(x, y)
-    elif name == 'fireflower':
-        plant = Fireflower(x, y)
-    elif name == 'cactus':
-        plant = Cactus(x, y)
-    all_sprites.add(plant)
+def plant(name, x, y,board):
+    if board.check_cell(x,y):
+        if name == 'sunflower':
+            plant = Sunflower(x, y)
+        elif name == 'windflower':
+            plant = Windflower(x, y)
+        elif name == 'peasflower':
+            plant = Peasflower(x, y)
+        elif name == 'fireflower':
+            plant = Fireflower(x, y)
+        elif name == 'cactus':
+            plant = Cactus(x, y)
+        board.board[x][y]=1
+        all_sprites.add(plant)
 
 
 def play():
@@ -228,9 +235,10 @@ def play():
                 choice_board_click = choice_board.get_click(event.pos)
                 if choice_board_click is not None:
                     current_plant = choice_board.choose_plant(choice_board_click)
-                    print(current_plant)
-                if main_board_click is not None:
-                    plant(current_plant, main_board_click[0], main_board_click[1])
+
+                if main_board_click is not None and current_plant is not None:
+
+                    plant(current_plant, main_board_click[0], main_board_click[1], main_board)
 
         screen.blit(background_grass, (50, 200))
         all_sprites.update()
