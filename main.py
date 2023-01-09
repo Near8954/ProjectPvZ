@@ -38,6 +38,7 @@ class Board:
         self.left = left
         self.top = top
         self.cell_size = 70
+        self.price_of_plants = (10,20,30,40,50)
 
     # настройка внешнего вида
     def set_view(self, left, top, cell_size):
@@ -88,14 +89,22 @@ class ChoiceBoard(Board):
                        (4, 0): 'cactus'}
 
     def render(self, screen):
+        font = pygame.font.Font(None, 40)
+
         for y in range(self.height):
             for x in range(self.width):
+                text = font.render(str(self.price_of_plants[x]), True, (0, 0, 0))
                 pygame.draw.rect(screen, (255, 255, 255),
                                  ((self.left + x * self.cell_size,
                                    self.top + y * self.cell_size),
-                                  (self.cell_size, self.cell_size)),
+                                  (self.cell_size, self.cell_size+25)),
                                  True)
                 screen.blit(self.map[(x, y)], (50 + x * 70, 20))
+                text_w = text.get_width()
+                text_h = text.get_height()
+                text_x = self.left+x*self.cell_size+(self.cell_size-text_w)//2
+                text_y = self.top+70
+                screen.blit(text, (text_x, text_y))
 
     def choose_plant(self, coords):
         self.current_plant = self.plants[coords]
