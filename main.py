@@ -147,6 +147,8 @@ class Peasflower(pygame.sprite.Sprite):
         self.rect.y = 200 + y * 70
 
 
+
+
 class Fireflower(pygame.sprite.Sprite):
     image_inactive = plants_images['fireflower'][1]
     image_active = plants_images['fireflower'][0]
@@ -278,6 +280,8 @@ def play():
         main_board.render(screen)
         choice_board.render(screen)
         pygame.display.flip()
+
+
 
 
 if __name__ == '__main__':
