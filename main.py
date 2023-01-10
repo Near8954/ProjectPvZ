@@ -27,9 +27,13 @@ plants_images = {'sunflower': pygame.transform.scale(load_image('PvZ/1/sunflower
                                 pygame.transform.scale(load_image('PvZ/4/fireflower_inactive.png'), (70, 70))],
                  'cactus': pygame.transform.scale(load_image('PvZ/5/cactus.png'), (70, 70))}
 <<<<<<< HEAD
+<<<<<<< HEAD
 enemies_images = {'snail': [pygame.transform.scale(load_image('PvZ/enemy_1/snail1.png'), (70, 70)), 
                            pygame.transform.scale(load_image('PvZ/enemy_1/snail2.png'), (70, 70))]}
 
+=======
+# изображения всех растений
+>>>>>>> 862cab2d5e738e8cb8a664f39b041aeb2772bc60
 =======
 # изображения всех растений
 >>>>>>> 862cab2d5e738e8cb8a664f39b041aeb2772bc60
