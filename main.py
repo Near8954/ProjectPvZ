@@ -26,17 +26,9 @@ plants_images = {'sunflower': pygame.transform.scale(load_image('PvZ/1/sunflower
                  'fireflower': [pygame.transform.scale(load_image('PvZ/4/fireflower_active.png'), (70, 70)),
                                 pygame.transform.scale(load_image('PvZ/4/fireflower_inactive.png'), (70, 70))],
                  'cactus': pygame.transform.scale(load_image('PvZ/5/cactus.png'), (70, 70))}
-<<<<<<< HEAD
-<<<<<<< HEAD
+# изображения всех растений
 enemies_images = {'snail': [pygame.transform.scale(load_image('PvZ/enemy_1/snail1.png'), (70, 70)), 
                            pygame.transform.scale(load_image('PvZ/enemy_1/snail2.png'), (70, 70))]}
-
-=======
-# изображения всех растений
->>>>>>> 862cab2d5e738e8cb8a664f39b041aeb2772bc60
-=======
-# изображения всех растений
->>>>>>> 862cab2d5e738e8cb8a664f39b041aeb2772bc60
 
 class Board:
     # создание игрового поля
@@ -248,8 +240,6 @@ def random_spawn():
     all_sprites.add(enemy)
 
 
-
-
 def play():
     running = True
     fps = 60
@@ -280,7 +270,7 @@ def play():
                 if main_board_click is not None and current_plant is not None:
 
                     plant(current_plant, main_board_click[0], main_board_click[1], main_board)
-        random_spawn()
+
         screen.blit(background_grass, (50, 200))
         all_sprites.update()
         all_sprites.draw(screen)
