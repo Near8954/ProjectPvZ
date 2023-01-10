@@ -1,6 +1,7 @@
 import pygame
 import os
 import sys
+import random
 
 size = WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode(size)
@@ -9,7 +10,7 @@ clock = pygame.time.Clock()
 all_sprites = pygame.sprite.Group()
 
 
-def load_image(name, colorkey=None):
+def load_image(name, colorkey=None):  # загрузка изображений
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
     if not os.path.isfile(fullname):
@@ -25,10 +26,16 @@ plants_images = {'sunflower': pygame.transform.scale(load_image('PvZ/1/sunflower
                  'fireflower': [pygame.transform.scale(load_image('PvZ/4/fireflower_active.png'), (70, 70)),
                                 pygame.transform.scale(load_image('PvZ/4/fireflower_inactive.png'), (70, 70))],
                  'cactus': pygame.transform.scale(load_image('PvZ/5/cactus.png'), (70, 70))}
+<<<<<<< HEAD
+enemies_images = {'snail': [pygame.transform.scale(load_image('PvZ/enemy_1/snail1.png'), (70, 70)), 
+                           pygame.transform.scale(load_image('PvZ/enemy_1/snail2.png'), (70, 70))]}
 
+=======
+# изображения всех растений
+>>>>>>> 862cab2d5e738e8cb8a664f39b041aeb2772bc60
 
 class Board:
-    # создание поля
+    # создание игрового поля
     def __init__(self, width, height, left, top):
         self.width = width
         self.height = height
@@ -56,7 +63,7 @@ class Board:
                                  True)
 
     def get_cell(self, mouse_pos):
-        x, y = mouse_pos
+        x, y = mouse_pos # инструменты для определения нажатия
         x -= self.left
         y -= self.top
         if (x <= 0 or y <= 0 or x >= self.width * self.cell_size
@@ -65,31 +72,31 @@ class Board:
 
         return x // self.cell_size, y // self.cell_size
 
-    def on_click(self, cell_coords):
+    def on_click(self, cell_coords):# инструменты для определения нажатия
         print(cell_coords)
 
     def get_click(self, mouse_pos):
-        cell = self.get_cell(mouse_pos)
+        cell = self.get_cell(mouse_pos)# инструменты для определения нажатия
         return cell
 
-    def plant(self, obj, coords):
+    def plant(self, obj, coords): # функция посадки растения
         self.board[coords[0]][coords[1]] = obj
 
-    def check_cell(self,x,y):
+    def check_cell(self,x,y): # инструменты для определения нажатия
         if self.board[x][y]:
             return False
         return True
 
 
-class ChoiceBoard(Board):
-    def put_plants(self, plants):
+class ChoiceBoard(Board): # поле выбора растений
+    def put_plants(self, plants): # два словаря - кто в каком поле сидит
         self.map = {(0, 0): plants[0], (1, 0): plants[1], (2, 0): plants[2], (3, 0): plants[3],
                     (4, 0): plants[4]}
         self.plants = {(0, 0): 'sunflower', (1, 0): 'windflower', (2, 0): 'peasflower', (3, 0): 'fireflower',
                        (4, 0): 'cactus'}
 
     def render(self, screen):
-        font = pygame.font.Font(None, 40)
+        font = pygame.font.Font(None, 40) # вывод поля
 
         for y in range(self.height):
             for x in range(self.width):
@@ -106,7 +113,7 @@ class ChoiceBoard(Board):
                 text_y = self.top+70
                 screen.blit(text, (text_x, text_y))
 
-    def choose_plant(self, coords):
+    def choose_plant(self, coords): # выбор растения
         self.current_plant = self.plants[coords]
         return self.current_plant
 
@@ -167,6 +174,17 @@ class Cactus(pygame.sprite.Sprite):
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
 
+class Snail(pygame.sprite.Sprite):
+    image_1 = enemies_images['snail'][0]
+    image_2 = enemies_images['snail'][1]
+    
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = Snail.image_1
+        self.rect = self.image.get_rect()
+        self.rect.x = 50 + x * 70
+        self.rect.y = 200 + y * 70
+
 
 def terminate():
     pygame.quit()
@@ -203,7 +221,7 @@ def start_screen():
             clock.tick(FPS)
 
 
-def plant(name, x, y,board):
+def plant(name, x, y,board):# функция посадки растения
     if board.check_cell(x,y):
         if name == 'sunflower':
             plant = Sunflower(x, y)
@@ -215,8 +233,17 @@ def plant(name, x, y,board):
             plant = Fireflower(x, y)
         elif name == 'cactus':
             plant = Cactus(x, y)
-        board.board[x][y]=1
+        board.plant(plant,(x,y))
         all_sprites.add(plant)
+
+def random_spawn():
+    name = random.choice(list(enemies_images.keys()))
+    x, y = random.randint(775, 780), random.randint(100, 500)
+    if name == 'snail':
+        enemy = Snail(x, y)
+    all_sprites.add(enemy)
+
+
 
 
 def play():
@@ -229,18 +256,19 @@ def play():
     main_board = Board(10, 5, 50, 200)
 
     choice_board = ChoiceBoard(5, 1, 50, 20)
-    choice_board.put_plants([plants_images['sunflower'], plants_images['windflower'], plants_images['peasflower'],
+    choice_board.put_plants([plants_images['sunflower'],
+                             plants_images['windflower'], plants_images['peasflower'],
                              plants_images['fireflower'][0], plants_images['cactus']])
     background_grass = load_image('background_grass.png')
     screen.fill(pygame.Color('grey'))
     main_board.plant(start_sunflower, (0, 2))
-    current_plant = None
+    current_plant = None # растение которое хотим посадить (в начале - никакое)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                main_board_click = main_board.get_click(event.pos)
+                main_board_click = main_board.get_click(event.pos) # проверка что куда садим
                 choice_board_click = choice_board.get_click(event.pos)
                 if choice_board_click is not None:
                     current_plant = choice_board.choose_plant(choice_board_click)
@@ -248,7 +276,7 @@ def play():
                 if main_board_click is not None and current_plant is not None:
 
                     plant(current_plant, main_board_click[0], main_board_click[1], main_board)
-
+        random_spawn()
         screen.blit(background_grass, (50, 200))
         all_sprites.update()
         all_sprites.draw(screen)
