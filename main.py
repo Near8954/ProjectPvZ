@@ -2,12 +2,15 @@ import pygame
 import os
 import sys
 import random
+import datetime as dt
 
 size = WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode(size)
 FPS = 50
 clock = pygame.time.Clock()
 all_sprites = pygame.sprite.Group()
+sunflowers = pygame.sprite.Group()
+sun = 10
 
 
 def load_image(name, colorkey=None):  # загрузка изображений
@@ -122,10 +125,27 @@ class Sunflower(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
+        self.born_time = dt.datetime.now()
         self.image = Sunflower.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
+        self.get_sun = True
+
+    def check_time_to_sun(self):
+        global sun
+        time_now = dt.datetime.now()
+
+        delta = (time_now - self.born_time).seconds
+
+        if delta % 5 == 0 and delta and self.get_sun:
+            self.image = Sunflower.image2
+            sun += 2
+            self.get_sun = False
+        elif delta % 5==1:
+            self.image = Sunflower.image
+            self.get_sun = True
+
 
 
 class Windflower(pygame.sprite.Sprite):
@@ -183,10 +203,11 @@ class Snail(pygame.sprite.Sprite):
         self.image = Snail.image_1
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = 280+y*70
+        self.rect.y = 210 + y * 70
 
     def update(self):
         self.rect.x -= 0.001
+
 
 def terminate():
     pygame.quit()
@@ -237,14 +258,26 @@ def plant(name, x, y, board):  # функция посадки растения
             plant = Cactus(x, y)
         board.plant(plant, (x, y))
         all_sprites.add(plant)
+        if name == 'sunflower':
+            sunflowers.add(plant)
 
 
 def random_spawn():
     name = random.choice(list(enemies_images.keys()))
-    x, y = 780, random.randint(0,4)
+    x, y = 780, random.randint(0, 4)
     if name == 'snail':
         enemy = Snail(x, y)
         all_sprites.add(enemy)
+
+
+def show_sun():
+    font = pygame.font.Font(None, 40)
+    text = font.render(str(sun), True, (0, 0, 0))
+    text_w = text.get_width()
+    text_h = text.get_height()
+    text_x = 700
+    text_y = 20
+    screen.blit(text, (text_x, text_y))
 
 
 def play():
@@ -253,6 +286,7 @@ def play():
 
     start_sunflower = Sunflower(0, 2)
     all_sprites.add(start_sunflower)
+    sunflowers.add(start_sunflower)
     clock = pygame.time.Clock()
     main_board = Board(10, 5, 50, 200)
 
@@ -286,9 +320,11 @@ def play():
                 if main_board_click is not None and current_plant is not None:
                     plant(current_plant, main_board_click[0], main_board_click[1], main_board)
 
-
         screen.blit(background_grass, (50, 200))
         all_sprites.update()
+        show_sun()
+        for obj in sunflowers:
+            obj.check_time_to_sun()
         all_sprites.draw(screen)
         clock.tick(fps)
         main_board.render(screen)
