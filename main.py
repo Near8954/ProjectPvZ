@@ -9,13 +9,9 @@ screen = pygame.display.set_mode(size)
 FPS = 50
 clock = pygame.time.Clock()
 all_sprites = pygame.sprite.Group()
-sunflowers = pygame.sprite.Group()
-plants = pygame.sprite.Group()
-sun = 10
 
 
-
-def load_image(name, colorkey=None):  # загрузка изображений
+def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
     if not os.path.isfile(fullname):
@@ -25,8 +21,7 @@ def load_image(name, colorkey=None):  # загрузка изображений
     return image
 
 
-plants_images = {'sunflower': [pygame.transform.scale(load_image('PvZ/1/sunflower.png'), (70, 70)),
-                               pygame.transform.scale(load_image('PvZ/1/sunflower2.png'), (70, 70))],
+plants_images = {'sunflower': pygame.transform.scale(load_image('PvZ/1/sunflower.png'), (70, 70)),
                  'windflower': pygame.transform.scale(load_image('PvZ/2/windflower.png'), (70, 70)),
                  'peasflower': pygame.transform.scale(load_image('PvZ/3/peasflower.png'), (70, 70)),
                  'fireflower': [pygame.transform.scale(load_image('PvZ/4/fireflower_active.png'), (70, 70)),
@@ -38,7 +33,7 @@ enemies_images = {'snail': [pygame.transform.scale(load_image('PvZ/enemy_1/snail
 
 
 class Board:
-    # создание игрового поля
+    # создание поля
     def __init__(self, width, height, left, top):
         self.width = width
         self.height = height
@@ -48,7 +43,7 @@ class Board:
         self.left = left
         self.top = top
         self.cell_size = 70
-        self.price_of_plants = (10, 20, 30, 40, 50)
+        self.price_of_plants = (10,20,30,40,50)
 
     # настройка внешнего вида
     def set_view(self, left, top, cell_size):
@@ -107,13 +102,13 @@ class ChoiceBoard(Board):  # поле выбора растений
                 pygame.draw.rect(screen, (255, 255, 255),
                                  ((self.left + x * self.cell_size,
                                    self.top + y * self.cell_size),
-                                  (self.cell_size, self.cell_size + 25)),
+                                  (self.cell_size, self.cell_size+25)),
                                  True)
                 screen.blit(self.map[(x, y)], (50 + x * 70, 20))
                 text_w = text.get_width()
                 text_h = text.get_height()
-                text_x = self.left + x * self.cell_size + (self.cell_size - text_w) // 2
-                text_y = self.top + 70
+                text_x = self.left+x*self.cell_size+(self.cell_size-text_w)//2
+                text_y = self.top+70
                 screen.blit(text, (text_x, text_y))
 
     def choose_plant(self, coords):  # выбор растения
@@ -122,34 +117,14 @@ class ChoiceBoard(Board):  # поле выбора растений
 
 
 class Sunflower(pygame.sprite.Sprite):
-    image = plants_images['sunflower'][0]
-    image2 = plants_images['sunflower'][1]
+    image = plants_images['sunflower']
 
     def __init__(self, x, y):
         super().__init__()
-        self.mask = pygame.mask.from_surface(self.image)
-        self.mask2 = pygame.mask.from_surface(self.image2)
-        self.born_time = dt.datetime.now()
         self.image = Sunflower.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
-        self.get_sun = True
-
-    def check_time_to_sun(self):
-        global sun
-        time_now = dt.datetime.now()
-
-        delta = (time_now - self.born_time).seconds
-
-        if delta % 5 == 0 and delta and self.get_sun:
-            self.image = Sunflower.image2
-            sun += 2
-            self.get_sun = False
-        elif delta % 5==1:
-            self.image = Sunflower.image
-            self.get_sun = True
-
 
 
 class Windflower(pygame.sprite.Sprite):
@@ -157,7 +132,6 @@ class Windflower(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
-        self.mask = pygame.mask.from_surface(self.image)
         self.image = Windflower.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
@@ -169,7 +143,6 @@ class Peasflower(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
-        self.mask = pygame.mask.from_surface(self.image)
         self.image = Peasflower.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
@@ -183,8 +156,7 @@ class Fireflower(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = Fireflower.image_inactive
-        self.mask = pygame.mask.from_surface(self.image_inactive)
-        self.mask2 = pygame.mask.from_surface(self.image_active)
+
         self.rect = self.image_inactive.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
@@ -195,7 +167,6 @@ class Cactus(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
-        self.mask = pygame.mask.from_surface(self.image)
         self.image = Cactus.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
@@ -208,20 +179,13 @@ class Snail(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
-        self.mask = pygame.mask.from_surface(self.image_1)
-        self.mask2 = pygame.mask.from_surface(self.image_2)
-        self.speed = 1
         self.image = Snail.image_1
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = 210 + y * 70
-        self.k = 0
 
     def update(self):
-        for obj in plants:
-            if pygame.sprite.collide_mask(self, obj):
-                self.speed = 0
-        self.rect.x -= self.speed
+        self.rect.x -= 0.001
 
 
 def terminate():
@@ -273,10 +237,8 @@ def plant(name, x, y, board):  # функция посадки растения
             plant = Cactus(x, y)
         board.plant(plant, (x, y))
         all_sprites.add(plant)
-        plants.add(plant)
         if name == 'sunflower':
             sunflowers.add(plant)
-            
 
 
 def random_spawn():
@@ -303,8 +265,6 @@ def play():
 
     start_sunflower = Sunflower(0, 2)
     all_sprites.add(start_sunflower)
-    sunflowers.add(start_sunflower)
-    plants.add(plants)
     clock = pygame.time.Clock()
     main_board = Board(10, 5, 50, 200)
 
@@ -316,33 +276,27 @@ def play():
                              plants_images['cactus']])
 
     background_grass = load_image('background_grass.png')
-
+    screen.fill(pygame.Color('grey'))
     main_board.plant(start_sunflower, (0, 2))
     current_plant = None  # растение которое хотим посадить (в начале - никакое)
     MYEVENTTYPE = pygame.USEREVENT + 1
     pygame.time.set_timer(MYEVENTTYPE, 5000)
     while running:
-        screen.fill(pygame.Color('grey'))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            if event.type == MYEVENTTYPE:
-                random_spawn()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 main_board_click = main_board.get_click(event.pos)  # проверка что куда садим
                 choice_board_click = choice_board.get_click(event.pos)
-
                 if choice_board_click is not None:
                     current_plant = choice_board.choose_plant(choice_board_click)
 
                 if main_board_click is not None and current_plant is not None:
-                    plant(current_plant, main_board_click[0], main_board_click[1], main_board)
 
+                    plant(current_plant, main_board_click[0], main_board_click[1], main_board)
+        random_spawn()
         screen.blit(background_grass, (50, 200))
         all_sprites.update()
-        show_sun()
-        for obj in sunflowers:
-            obj.check_time_to_sun()
         all_sprites.draw(screen)
         clock.tick(fps)
         main_board.render(screen)
