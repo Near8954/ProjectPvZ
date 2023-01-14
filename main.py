@@ -10,7 +10,9 @@ FPS = 50
 clock = pygame.time.Clock()
 all_sprites = pygame.sprite.Group()
 sunflowers = pygame.sprite.Group()
+plants = pygame.sprite.Group()
 sun = 10
+
 
 
 def load_image(name, colorkey=None):  # загрузка изображений
@@ -125,6 +127,8 @@ class Sunflower(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.mask2 = pygame.mask.from_surface(self.image2)
         self.born_time = dt.datetime.now()
         self.image = Sunflower.image
         self.rect = self.image.get_rect()
@@ -153,6 +157,7 @@ class Windflower(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
+        self.mask = pygame.mask.from_surface(self.image)
         self.image = Windflower.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
@@ -164,6 +169,7 @@ class Peasflower(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
+        self.mask = pygame.mask.from_surface(self.image)
         self.image = Peasflower.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
@@ -177,7 +183,8 @@ class Fireflower(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = Fireflower.image_inactive
-
+        self.mask = pygame.mask.from_surface(self.image_inactive)
+        self.mask2 = pygame.mask.from_surface(self.image_active)
         self.rect = self.image_inactive.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
@@ -188,6 +195,7 @@ class Cactus(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
+        self.mask = pygame.mask.from_surface(self.image)
         self.image = Cactus.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
@@ -200,13 +208,20 @@ class Snail(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
+        self.mask = pygame.mask.from_surface(self.image_1)
+        self.mask2 = pygame.mask.from_surface(self.image_2)
+        self.speed = 1
         self.image = Snail.image_1
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = 210 + y * 70
+        self.k = 0
 
     def update(self):
-        self.rect.x -= 0.001
+        for obj in plants:
+            if pygame.sprite.collide_mask(self, obj):
+                self.speed = 0
+        self.rect.x -= self.speed
 
 
 def terminate():
@@ -258,8 +273,10 @@ def plant(name, x, y, board):  # функция посадки растения
             plant = Cactus(x, y)
         board.plant(plant, (x, y))
         all_sprites.add(plant)
+        plants.add(plant)
         if name == 'sunflower':
             sunflowers.add(plant)
+            
 
 
 def random_spawn():
@@ -287,6 +304,7 @@ def play():
     start_sunflower = Sunflower(0, 2)
     all_sprites.add(start_sunflower)
     sunflowers.add(start_sunflower)
+    plants.add(plants)
     clock = pygame.time.Clock()
     main_board = Board(10, 5, 50, 200)
 
