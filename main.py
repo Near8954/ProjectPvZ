@@ -10,7 +10,10 @@ FPS = 50
 clock = pygame.time.Clock()
 all_sprites = pygame.sprite.Group()
 sunflowers = pygame.sprite.Group()
-sun = 10
+peasflowers = pygame.sprite.Group()
+plants = pygame.sprite.Group()
+peases = pygame.sprite.Group()
+sun = 40
 
 
 def load_image(name, colorkey=None):  # загрузка изображений
@@ -29,7 +32,8 @@ plants_images = {'sunflower': [pygame.transform.scale(load_image('PvZ/1/sunflowe
                  'peasflower': pygame.transform.scale(load_image('PvZ/3/peasflower.png'), (70, 70)),
                  'fireflower': [pygame.transform.scale(load_image('PvZ/4/fireflower_active.png'), (70, 70)),
                                 pygame.transform.scale(load_image('PvZ/4/fireflower_inactive.png'), (70, 70))],
-                 'cactus': pygame.transform.scale(load_image('PvZ/5/cactus.png'), (70, 70))}
+                 'cactus': pygame.transform.scale(load_image('PvZ/5/cactus.png'), (70, 70)),
+                 'peas': pygame.transform.scale(load_image('PvZ/3/Sprite-0001.png'), (110, 110))}
 # изображения всех растений
 enemies_images = {'snail': [pygame.transform.scale(load_image('PvZ/enemy_1/snail1.png'), (70, 70)),
                             pygame.transform.scale(load_image('PvZ/enemy_1/snail2.png'), (70, 70))]}
@@ -122,9 +126,14 @@ class ChoiceBoard(Board):  # поле выбора растений
 class Sunflower(pygame.sprite.Sprite):
     image = plants_images['sunflower'][0]
     image2 = plants_images['sunflower'][1]
+    
 
     def __init__(self, x, y):
+        global sun
+        sun -= 10
         super().__init__()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.mask2 = pygame.mask.from_surface(self.image2)
         self.born_time = dt.datetime.now()
         self.image = Sunflower.image
         self.rect = self.image.get_rect()
@@ -140,34 +149,76 @@ class Sunflower(pygame.sprite.Sprite):
 
         if delta % 5 == 0 and delta and self.get_sun:
             self.image = Sunflower.image2
-            sun += 2
+            sun += 5
             self.get_sun = False
-        elif delta % 5==1:
+        elif delta % 5 == 1:
             self.image = Sunflower.image
             self.get_sun = True
-
 
 
 class Windflower(pygame.sprite.Sprite):
     image = plants_images['windflower']
 
     def __init__(self, x, y):
+        global sun
+        sun -= 20
         super().__init__()
+        self.mask = pygame.mask.from_surface(self.image)
         self.image = Windflower.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
 
 
+class Peas(pygame.sprite.Sprite):
+    image = plants_images['peas']
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.image = Peas.image
+        self.rect = self.image.get_rect()
+        self.rect.x = 50 + x * 70 + 5
+        self.rect.y = 160 + y * 70
+
+    def update(self):
+        self.rect.x += 1
+        if self.rect.x>=800:
+            self.kill()
+
+
 class Peasflower(pygame.sprite.Sprite):
     image = plants_images['peasflower']
 
     def __init__(self, x, y):
+        global sun
+        sun -= 30
         super().__init__()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.x = x
+        self.y = y
+        self.born_time = dt.datetime.now()
         self.image = Peasflower.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
+        self.shoot = True
+
+    def check_time_to_shoot(self):
+
+        time_now = dt.datetime.now()
+
+        delta = (time_now - self.born_time).seconds
+
+
+        if delta % 5 == 0 and delta and self.shoot:
+
+            peas = Peas(self.x, self.y)
+            peases.add(peas)
+            all_sprites.add(peas)
+            self.shoot = False
+        elif delta % 5 == 1:
+            self.shoot = True
 
 
 class Fireflower(pygame.sprite.Sprite):
@@ -175,9 +226,12 @@ class Fireflower(pygame.sprite.Sprite):
     image_active = plants_images['fireflower'][0]
 
     def __init__(self, x, y):
+        global sun
+        sun -= 40
         super().__init__()
         self.image = Fireflower.image_inactive
-
+        self.mask = pygame.mask.from_surface(self.image_inactive)
+        self.mask = pygame.mask.from_surface(self.image_active)
         self.rect = self.image_inactive.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
@@ -187,7 +241,10 @@ class Cactus(pygame.sprite.Sprite):
     image = plants_images['cactus']
 
     def __init__(self, x, y):
+        global sun
+        sun -= 50
         super().__init__()
+        self.mask = pygame.mask.from_surface(self.image)
         self.image = Cactus.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
@@ -201,12 +258,18 @@ class Snail(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = Snail.image_1
+        self.mask = pygame.mask.from_surface(self.image_1)
+        self.mask2 = pygame.mask.from_surface(self.image_2)
         self.rect = self.image.get_rect()
         self.rect.x = x
+        self.speed = 1
         self.rect.y = 210 + y * 70
 
     def update(self):
-        self.rect.x -= 0.001
+        for obj in plants:
+            if pygame.sprite.collide_mask(self, obj):
+                self.speed = 0
+        self.rect.x -= self.speed
 
 
 def terminate():
@@ -225,7 +288,7 @@ def start_screen():
     font = pygame.font.Font(None, 30)
     text_coord = 50
     for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('white'))
+        string_rendered = font.render(line, True, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
         intro_rect.top = text_coord
@@ -246,20 +309,27 @@ def start_screen():
 
 def plant(name, x, y, board):  # функция посадки растения
     if board.check_cell(x, y):
-        if name == 'sunflower':
+        if name == 'sunflower' and sun >= 10:
             plant = Sunflower(x, y)
-        elif name == 'windflower':
+        elif name == 'windflower' and sun >= 20:
             plant = Windflower(x, y)
-        elif name == 'peasflower':
+        elif name == 'peasflower' and sun >= 30:
             plant = Peasflower(x, y)
-        elif name == 'fireflower':
+        elif name == 'fireflower' and sun >= 40:
             plant = Fireflower(x, y)
-        elif name == 'cactus':
+        elif name == 'cactus' and sun >= 50:
             plant = Cactus(x, y)
-        board.plant(plant, (x, y))
-        all_sprites.add(plant)
-        if name == 'sunflower':
-            sunflowers.add(plant)
+        else:
+            plant = None
+        if plant is not None:
+
+            board.plant(plant, (x, y))
+            all_sprites.add(plant)
+            plants.add(plant)
+            if name == 'sunflower':
+                sunflowers.add(plant)
+            elif name=='peasflower':
+                peasflowers.add(plant)
 
 
 def random_spawn():
@@ -302,7 +372,7 @@ def play():
     main_board.plant(start_sunflower, (0, 2))
     current_plant = None  # растение которое хотим посадить (в начале - никакое)
     MYEVENTTYPE = pygame.USEREVENT + 1
-    pygame.time.set_timer(MYEVENTTYPE, 5000)
+    pygame.time.set_timer(MYEVENTTYPE, 10000)
     while running:
         screen.fill(pygame.Color('grey'))
         for event in pygame.event.get():
@@ -311,7 +381,8 @@ def play():
             if event.type == MYEVENTTYPE:
                 random_spawn()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                main_board_click = main_board.get_click(event.pos)  # проверка что куда садим
+                main_board_click = main_board.get_click(event.pos)
+                # проверка что куда садим
                 choice_board_click = choice_board.get_click(event.pos)
 
                 if choice_board_click is not None:
@@ -325,11 +396,16 @@ def play():
         show_sun()
         for obj in sunflowers:
             obj.check_time_to_sun()
+        for obj in peasflowers:
+            obj.check_time_to_shoot()
         all_sprites.draw(screen)
+
         clock.tick(fps)
         main_board.render(screen)
         choice_board.render(screen)
         pygame.display.flip()
+        peases.draw(screen)
+
 
 
 if __name__ == '__main__':
