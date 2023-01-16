@@ -11,6 +11,7 @@ clock = pygame.time.Clock()
 all_sprites = pygame.sprite.Group()
 sunflowers = pygame.sprite.Group()
 peasflowers = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
 plants = pygame.sprite.Group()
 peases = pygame.sprite.Group()
 sun = 40
@@ -270,6 +271,8 @@ class Snail(pygame.sprite.Sprite):
             if pygame.sprite.collide_mask(self, obj):
                 self.speed = 0
         self.rect.x -= self.speed
+        if self.rect.x == 0:
+            self.kill()
 
 
 def terminate():
@@ -338,6 +341,7 @@ def random_spawn():
     if name == 'snail':
         enemy = Snail(x, y)
         all_sprites.add(enemy)
+        enemies.add(enemy)
 
 
 def show_sun():
@@ -355,8 +359,10 @@ def play():
     fps = 60
 
     start_sunflower = Sunflower(0, 2)
+    enemies
     all_sprites.add(start_sunflower)
     sunflowers.add(start_sunflower)
+    plants.add(start_sunflower)
     clock = pygame.time.Clock()
     main_board = Board(10, 5, 50, 200)
 
@@ -403,8 +409,10 @@ def play():
         clock.tick(fps)
         main_board.render(screen)
         choice_board.render(screen)
-        pygame.display.flip()
+        
         peases.draw(screen)
+        enemies.draw(screen)
+        pygame.display.flip()
 
 
 
