@@ -131,6 +131,7 @@ class Sunflower(pygame.sprite.Sprite):
     def __init__(self, x, y):
         global sun
         sun -= 10
+        self.hp = 100
         super().__init__()
         self.mask = pygame.mask.from_surface(self.image)
         self.mask2 = pygame.mask.from_surface(self.image2)
@@ -154,7 +155,14 @@ class Sunflower(pygame.sprite.Sprite):
         elif delta % 5 == 1:
             self.image = Sunflower.image
             self.get_sun = True
-
+    
+    def update(self):
+        for obj in enemies:
+            if pygame.sprite.collide_mask(self, obj):
+                self.hp -= 0.5
+        if self.hp <= 0:
+            self.kill()
+        print(self.hp)
 
 class Windflower(pygame.sprite.Sprite):
     image = plants_images['windflower']
@@ -168,6 +176,15 @@ class Windflower(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
+        self.hp = 100
+    
+    def update(self):
+        for obj in enemies:
+            if pygame.sprite.collide_mask(self, obj):
+                self.hp -= 0.5
+        if self.hp <= 0:
+            self.kill()
+        
 
 
 class Peas(pygame.sprite.Sprite):
@@ -180,11 +197,18 @@ class Peas(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70 + 5
         self.rect.y = 160 + y * 70
+        self.hp = 100
 
     def update(self):
         self.rect.x += 1
         if self.rect.x >= 800:
             self.kill()
+        for obj in enemies:
+            if pygame.sprite.collide_mask(self, obj):
+                self.hp -= 0.5
+        if self.hp <= 0:
+            self.kill()
+        
 
 
 class Peasflower(pygame.sprite.Sprite):
@@ -203,6 +227,7 @@ class Peasflower(pygame.sprite.Sprite):
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
         self.shoot = True
+        self.hp = 100
 
     def check_time_to_shoot(self):
 
@@ -218,6 +243,13 @@ class Peasflower(pygame.sprite.Sprite):
             self.shoot = False
         elif delta % 5 == 1:
             self.shoot = True
+    
+    def update(self):
+        for obj in enemies:
+            if pygame.sprite.collide_mask(self, obj):
+                self.hp -= 0.5
+        if self.hp <= 0:
+            self.kill()
 
 
 class Fireflower(pygame.sprite.Sprite):
@@ -233,7 +265,15 @@ class Fireflower(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image_active)
         self.rect = self.image_inactive.get_rect()
         self.rect.x = 50 + x * 70
+        self.hp = 100
         self.rect.y = 200 + y * 70
+    
+    def update(self):
+        for obj in enemies:
+            if pygame.sprite.collide_mask(self, obj):
+                self.hp -= 0.5
+        if self.hp <= 0:
+            self.kill()
 
 
 class Cactus(pygame.sprite.Sprite):
@@ -248,6 +288,14 @@ class Cactus(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
+        self.hp = 200
+    
+    def update(self):
+        for obj in enemies:
+            if pygame.sprite.collide_mask(self, obj):
+                self.hp -= 0.5
+        if self.hp <= 0:
+            self.kill()
 
 
 class Snail(pygame.sprite.Sprite):
@@ -265,9 +313,14 @@ class Snail(pygame.sprite.Sprite):
         self.rect.y = 210 + y * 70
 
     def update(self):
+        self.f = False
         for obj in plants:
             if pygame.sprite.collide_mask(self, obj):
                 self.speed = 0
+                self.f = True
+        if not self.f:
+            self.speed = 1
+            self.f = False
         self.rect.x -= self.speed
         if self.rect.x == 0:
             self.kill()
