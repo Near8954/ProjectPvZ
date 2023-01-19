@@ -127,7 +127,6 @@ class ChoiceBoard(Board):  # поле выбора растений
 class Sunflower(pygame.sprite.Sprite):
     image = plants_images['sunflower'][0]
     image2 = plants_images['sunflower'][1]
-    
 
     def __init__(self, x, y):
         global sun
@@ -184,7 +183,7 @@ class Peas(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.x += 1
-        if self.rect.x>=800:
+        if self.rect.x >= 800:
             self.kill()
 
 
@@ -210,7 +209,6 @@ class Peasflower(pygame.sprite.Sprite):
         time_now = dt.datetime.now()
 
         delta = (time_now - self.born_time).seconds
-
 
         if delta % 5 == 0 and delta and self.shoot:
 
@@ -281,33 +279,57 @@ def terminate():
 
 
 def start_screen():
-    intro_text = ["ЗАСТАВКА", "",
-                  "Правила игры",
-                  "Если в правилах несколько строк,",
-                  "приходится выводить их построчно"]
+    def text(screen):
+        font = pygame.font.Font(None, 100)
+        but_color = pygame.Color((102, 0, 102))
+        intro_text = "ВРАГИ-ЖУКИ"
+        text = font.render(intro_text, True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (800 - text_w) // 2
+        text_y = 70
+        screen.blit(text, (text_x, text_y))
+        pygame.draw.rect(screen, but_color, (300, 200, 200, 50))
 
-    fon = pygame.transform.scale(load_image('temp_start_menu.png'), (WIDTH, HEIGHT))
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, True, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
+        font = pygame.font.Font(None, 40)
+        text = font.render('СТАРТ', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (200 - text_w) // 2 + 300
+        text_y = (50 - text_h) // 2 + 200
+        screen.blit(text, (text_x, text_y))
 
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    terminate()
-                elif event.type == pygame.KEYDOWN or \
-                        event.type == pygame.MOUSEBUTTONDOWN:
+        pygame.draw.rect(screen, but_color, (300, 300, 200, 50))
+        font = pygame.font.Font(None, 40)
+        text = font.render('УРОВНИ', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (200 - text_w) // 2 + 300
+        text_y = (50 - text_h) // 2 + 300
+        screen.blit(text, (text_x, text_y))
+
+        pygame.draw.rect(screen, but_color, (300, 400, 200, 50))
+        font = pygame.font.Font(None, 40)
+        text = font.render('ОПИСАНИЕ', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (200 - text_w) // 2 + 300
+        text_y = (50 - text_h) // 2 + 400
+        screen.blit(text, (text_x, text_y))
+
+    while True:
+
+        screen.fill((119, 221, 119))
+        text(screen)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x,y = event.pos
+                if 300<=x and x<=500 and 200<=y and y<=250:
                     return  # начинаем игру
-            pygame.display.flip()
-            clock.tick(FPS)
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def plant(name, x, y, board):  # функция посадки растения
@@ -331,7 +353,7 @@ def plant(name, x, y, board):  # функция посадки растения
             plants.add(plant)
             if name == 'sunflower':
                 sunflowers.add(plant)
-            elif name=='peasflower':
+            elif name == 'peasflower':
                 peasflowers.add(plant)
 
 
@@ -359,7 +381,6 @@ def play():
     fps = 60
 
     start_sunflower = Sunflower(0, 2)
-    enemies
     all_sprites.add(start_sunflower)
     sunflowers.add(start_sunflower)
     plants.add(start_sunflower)
@@ -409,11 +430,10 @@ def play():
         clock.tick(fps)
         main_board.render(screen)
         choice_board.render(screen)
-        
+
         peases.draw(screen)
         enemies.draw(screen)
         pygame.display.flip()
-
 
 
 if __name__ == '__main__':
