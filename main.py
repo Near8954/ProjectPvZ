@@ -6,7 +6,7 @@ import datetime as dt
 
 size = WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode(size)
-FPS = 50
+FPS = 30
 clock = pygame.time.Clock()
 all_sprites = pygame.sprite.Group()
 sunflowers = pygame.sprite.Group()
@@ -213,7 +213,6 @@ class Peas(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70 + 5
         self.rect.y = 160 + y * 70
-        self.hp = 100
 
     def update(self):
         self.rect.x += 1
@@ -221,10 +220,9 @@ class Peas(pygame.sprite.Sprite):
             self.kill()
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
-                self.hp -= 0.5
-        if self.hp <= 0:
-            self.kill()
-            main_board.change(self.x, self.y)
+                self.kill()
+                peases.remove(self)
+        
 
 
 class Peasflower(pygame.sprite.Sprite):
@@ -329,11 +327,12 @@ class Snail(pygame.sprite.Sprite):
         super().__init__()
         self.image = Snail.image_1
         self.mask = pygame.mask.from_surface(self.image_1)
-        self.mask2 = pygame.mask.from_surface(self.image_2)
+        #self.mask2 = pygame.mask.from_surface(self.image_2)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.speed = 1
-        self.rect.y = 210 + y * 70
+        self.hp = 10
+        self.rect.y = 200 + y * 70
 
     def update(self):
         self.f = False
@@ -341,12 +340,19 @@ class Snail(pygame.sprite.Sprite):
             if pygame.sprite.collide_mask(self, obj):
                 self.speed = 0
                 self.f = True
+        for obj1 in peases:
+            if pygame.sprite.collide_mask(self, obj1):
+                self.hp = self.hp - 10
+                if self.hp == 0:
+                    self.kill()
+                    enemies.remove(self)
         if not self.f:
             self.speed = 1
             self.f = False
         self.rect.x -= self.speed
         if self.rect.x == 0:
             self.kill()
+            enemies.remove(self)
 
 
 def terminate():
@@ -473,7 +479,7 @@ def show_sun():
 
 def play():
     running = True
-    fps = 60
+    fps = 30
 
     start_sunflower = Sunflower(0, 2)
     all_sprites.add(start_sunflower)
