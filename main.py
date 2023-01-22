@@ -14,7 +14,7 @@ peasflowers = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 plants = pygame.sprite.Group()
 peases = pygame.sprite.Group()
-sun = 1000
+sun = 30
 
 
 def load_image(name, colorkey=None):  # загрузка изображений
@@ -38,6 +38,8 @@ plants_images = {'sunflower': [pygame.transform.scale(load_image('PvZ/1/sunflowe
 # изображения всех растений
 enemies_images = {'snail': [pygame.transform.scale(load_image('PvZ/enemy_1/snail1.png'), (70, 70)),
                             pygame.transform.scale(load_image('PvZ/enemy_1/snail2.png'), (70, 70))]}
+
+image_sun = pygame.transform.scale(load_image('sun.png'), (20, 20))
 
 
 # изображения врагов
@@ -122,7 +124,8 @@ class ChoiceBoard(Board):  # поле выбора растений
                 text_h = text.get_height()
                 text_x = self.left + x * self.cell_size + (self.cell_size - text_w) // 2
                 text_y = self.top + 70
-                screen.blit(text, (text_x, text_y))
+                screen.blit(text, (text_x + 10, text_y))
+                screen.blit(image_sun, (text_x - 10, text_y + 3))
 
     def choose_plant(self, coords):  # выбор растения
         self.current_plant = self.plants[coords]
@@ -462,9 +465,10 @@ def show_sun():
     text = font.render(str(sun), True, (0, 0, 0))
     text_w = text.get_width()
     text_h = text.get_height()
-    text_x = 700
+    text_x = 700 + (100 - text_w) // 2
     text_y = 20
     screen.blit(text, (text_x, text_y))
+    screen.blit(image_sun, (text_x - 20, text_y + 3))
 
 
 def play():
