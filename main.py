@@ -346,18 +346,36 @@ class Snail(pygame.sprite.Sprite):
     image_1 = enemies_images['snail'][0]
     image_2 = enemies_images['snail'][1]
 
-    def __init__(self, x, y):
+    def __init__(self, sheet, columns, rows, x, y):
         super().__init__()
         self.image = Snail.image_1
         self.mask = pygame.mask.from_surface(self.image_1)
         self.mask2 = pygame.mask.from_surface(self.image_2)
+        self.frames = []
+        self.cut_sheet(sheet, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.speed = 1
-        self.hp = 30
         self.rect.y = 200 + y * 70
+        self.speed = 1
+        self.hp = 30        
+    
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, 
+                                sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
 
     def update(self):
+        
+        #self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        seconds = int(dt.datetime.now().second)
+        self.cur_frame = seconds % 2
+        self.image = self.frames[self.cur_frame]
         self.f = False
         for obj in plants:
             if pygame.sprite.collide_mask(self, obj):
@@ -632,9 +650,12 @@ def plant(name, x, y, board):  # функция посадки растения
 
 def random_spawn():
     name = random.choice(list(enemies_images.keys()))
-    x, y = 780, random.randint(0, 4)
+    x, y = 780, random.randint(0, 4)	
+    img = load_image("snail_sheets.png")
+    width, height = img.get_size()
+    image = pygame.transform.scale(img, (width // 5, height // 5))
     if name == 'snail':
-        enemy = Snail(x, y)
+        enemy = Snail(image, 2, 1, x, y)
         all_sprites.add(enemy)
         enemies.add(enemy)
 
@@ -653,7 +674,6 @@ def show_sun():
 def play():
     running = True
     fps = 30
-    global sun
     sun = 30
     main_board.change(0, 0, all=True)
     start_sunflower = Sunflower(0, 2)
