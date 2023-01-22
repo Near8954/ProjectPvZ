@@ -14,8 +14,7 @@ peasflowers = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 plants = pygame.sprite.Group()
 peases = pygame.sprite.Group()
-sun = 40
-
+sun = 1000
 
 
 def load_image(name, colorkey=None):  # загрузка изображений
@@ -39,6 +38,8 @@ plants_images = {'sunflower': [pygame.transform.scale(load_image('PvZ/1/sunflowe
 # изображения всех растений
 enemies_images = {'snail': [pygame.transform.scale(load_image('PvZ/enemy_1/snail1.png'), (70, 70)),
                             pygame.transform.scale(load_image('PvZ/enemy_1/snail2.png'), (70, 70))]}
+
+
 # изображения врагов
 
 class Board:
@@ -47,7 +48,6 @@ class Board:
         self.width = width
         self.height = height
         self.board = [[0] * height for _ in range(width)]
-        global board
 
         # значения по умолчанию
         self.left = left
@@ -94,7 +94,7 @@ class Board:
         if self.board[x][y]:
             return False
         return True
-    
+
     def change(self, x, y):
         self.board[x][y] = 0
 
@@ -162,15 +162,16 @@ class Sunflower(pygame.sprite.Sprite):
         elif delta % 5 == 1:
             self.image = Sunflower.image
             self.get_sun = True
-    
+
     def update(self):
+
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
                 self.hp -= 0.5
         if self.hp <= 0:
             self.kill()
-            board.change(self.x, self.y)
-        print(self.hp)
+            main_board.change(self.x, self.y)
+
 
 class Windflower(pygame.sprite.Sprite):
     image = plants_images['windflower']
@@ -179,20 +180,22 @@ class Windflower(pygame.sprite.Sprite):
         global sun
         sun -= 20
         super().__init__()
+        self.x = x
+        self.y = y
         self.mask = pygame.mask.from_surface(self.image)
         self.image = Windflower.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
         self.hp = 100
-    
+
     def update(self):
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
                 self.hp -= 0.5
         if self.hp <= 0:
             self.kill()
-        
+            main_board.change(self.x, self.y)
 
 
 class Peas(pygame.sprite.Sprite):
@@ -200,6 +203,8 @@ class Peas(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
+        self.x = x
+        self.y = y
         self.mask = pygame.mask.from_surface(self.image)
         self.image = Peas.image
         self.rect = self.image.get_rect()
@@ -216,7 +221,7 @@ class Peas(pygame.sprite.Sprite):
                 self.hp -= 0.5
         if self.hp <= 0:
             self.kill()
-        
+            main_board.change(self.x, self.y)
 
 
 class Peasflower(pygame.sprite.Sprite):
@@ -251,13 +256,14 @@ class Peasflower(pygame.sprite.Sprite):
             self.shoot = False
         elif delta % 5 == 1:
             self.shoot = True
-    
+
     def update(self):
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
                 self.hp -= 0.5
         if self.hp <= 0:
             self.kill()
+            main_board.change(self.x, self.y)
 
 
 class Fireflower(pygame.sprite.Sprite):
@@ -268,6 +274,8 @@ class Fireflower(pygame.sprite.Sprite):
         global sun
         sun -= 40
         super().__init__()
+        self.x = x
+        self.y = y
         self.image = Fireflower.image_inactive
         self.mask = pygame.mask.from_surface(self.image_inactive)
         self.mask = pygame.mask.from_surface(self.image_active)
@@ -275,13 +283,14 @@ class Fireflower(pygame.sprite.Sprite):
         self.rect.x = 50 + x * 70
         self.hp = 100
         self.rect.y = 200 + y * 70
-    
+
     def update(self):
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
                 self.hp -= 0.5
         if self.hp <= 0:
             self.kill()
+            main_board.change(self.x, self.y)
 
 
 class Cactus(pygame.sprite.Sprite):
@@ -291,19 +300,22 @@ class Cactus(pygame.sprite.Sprite):
         global sun
         sun -= 50
         super().__init__()
+        self.x = x
+        self.y = y
         self.mask = pygame.mask.from_surface(self.image)
         self.image = Cactus.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
         self.hp = 200
-    
+
     def update(self):
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
                 self.hp -= 0.5
         if self.hp <= 0:
             self.kill()
+            main_board.change(self.x, self.y)
 
 
 class Snail(pygame.sprite.Sprite):
@@ -339,6 +351,22 @@ def terminate():
     sys.exit()
 
 
+def description_screen():
+    while True:
+
+        screen.fill((119, 221, 119))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if 300 <= x and x <= 500 and 200 <= y and y <= 250:
+                    return  # начинаем игру
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def start_screen():
     def text(screen):
         font = pygame.font.Font(None, 100)
@@ -350,8 +378,8 @@ def start_screen():
         text_x = (800 - text_w) // 2
         text_y = 70
         screen.blit(text, (text_x, text_y))
-        pygame.draw.rect(screen, but_color, (300, 200, 200, 50))
 
+        pygame.draw.rect(screen, but_color, (300, 200, 200, 50))
         font = pygame.font.Font(None, 40)
         text = font.render('СТАРТ', True, (255, 255, 255))
         text_w = text.get_width()
@@ -386,9 +414,11 @@ def start_screen():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                x,y = event.pos
-                if 300<=x and x<=500 and 200<=y and y<=250:
+                x, y = event.pos
+                if 300 <= x and x <= 500 and 200 <= y and y <= 250:
                     return  # начинаем игру
+                elif 300 <= x and x <= 500 and 400 <= y and y <= 450:
+                    description_screen()
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -446,7 +476,6 @@ def play():
     sunflowers.add(start_sunflower)
     plants.add(start_sunflower)
     clock = pygame.time.Clock()
-    main_board = Board(10, 5, 50, 200)
 
     choice_board = ChoiceBoard(5, 1, 50, 20)
     choice_board.put_plants([plants_images['sunflower'][0],
@@ -502,6 +531,6 @@ if __name__ == '__main__':
     pygame.display.set_caption('PvZ')
     size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
-
+    main_board = Board(10, 5, 50, 200)
     start_screen()
     play()
