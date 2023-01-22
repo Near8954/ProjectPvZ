@@ -1,21 +1,24 @@
 import pygame
 import os
-import sys
+import sys  # библиотеки
 import random
 import datetime as dt
 
-size = WIDTH, HEIGHT = 800, 600
+size = WIDTH, HEIGHT = 800, 600  # всякие нужные параметры
 screen = pygame.display.set_mode(size)
 FPS = 30
 clock = pygame.time.Clock()
-all_sprites = pygame.sprite.Group()
-sunflowers = pygame.sprite.Group()
-peasflowers = pygame.sprite.Group()
-enemies = pygame.sprite.Group()
+all_sprites = pygame.sprite.Group()  # группы спрайтов
+sunflowers = pygame.sprite.Group()  # подсолнухов
+peasflowers = pygame.sprite.Group()  # горохострелов
+enemies = pygame.sprite.Group()  # улиток
 plants = pygame.sprite.Group()
-peases = pygame.sprite.Group()
-sun = 30
-level = 1
+peases = pygame.sprite.Group()  # горошин
+sun = 30  # стартовое количество солнышек
+level = 1  # уровень (изначально 1)
+times = [120, 240, 300]
+
+time_play = times[0]
 
 
 def load_image(name, colorkey=None):  # загрузка изображений
@@ -39,11 +42,10 @@ plants_images = {'sunflower': [pygame.transform.scale(load_image('PvZ/1/sunflowe
 # изображения всех растений
 enemies_images = {'snail': [pygame.transform.scale(load_image('PvZ/enemy_1/snail1.png'), (70, 70)),
                             pygame.transform.scale(load_image('PvZ/enemy_1/snail2.png'), (70, 70))]}
-
-image_sun = pygame.transform.scale(load_image('sun.png'), (20, 20))
-
-
 # изображения врагов
+
+image_sun = pygame.transform.scale(load_image('sun.png'), (20, 20))  # изображение солнышка
+
 
 class Board:
     # создание игрового поля
@@ -65,7 +67,7 @@ class Board:
         self.cell_size = cell_size
 
     def render(self, screen):
-        for y in range(self.height):
+        for y in range(self.height):  # вывод игрового поля
             for x in range(self.width):
                 pygame.draw.rect(screen, (255, 255, 255),
                                  ((self.left + x * self.cell_size,
@@ -98,7 +100,7 @@ class Board:
             return False
         return True
 
-    def change(self, x, y, all=False):
+    def change(self, x, y, all=False):  # функция очистки клетки поля после смерти растения
         if all:
             self.board = [[0] * self.height for _ in range(self.width)]
             return
@@ -136,20 +138,20 @@ class ChoiceBoard(Board):  # поле выбора растений
         return self.current_plant
 
 
-class Sunflower(pygame.sprite.Sprite):
+class Sunflower(pygame.sprite.Sprite):  # подсолнух
     image = plants_images['sunflower'][0]
     image2 = plants_images['sunflower'][1]
 
     def __init__(self, x, y):
         global sun
-        sun -= 10
-        self.hp = 100
+        sun -= 10  # у каждого растения есть цена, при посадке - вычитаем ее из всех солнышек
+        self.hp = 100  # всякие параметры
         self.x = x
         self.y = y
         super().__init__()
         self.mask = pygame.mask.from_surface(self.image)
         self.mask2 = pygame.mask.from_surface(self.image2)
-        self.born_time = dt.datetime.now()
+        self.born_time = dt.datetime.now()  # время рождения
         self.image = Sunflower.image
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
@@ -157,7 +159,7 @@ class Sunflower(pygame.sprite.Sprite):
         self.get_sun = True
 
     def check_time_to_sun(self):
-        global sun
+        global sun  # функция для проверки времени, чтобы подсолнух мог давать нам солнышки
         time_now = dt.datetime.now()
 
         delta = (time_now - self.born_time).seconds
@@ -174,21 +176,21 @@ class Sunflower(pygame.sprite.Sprite):
 
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
-                self.hp -= 0.5
+                self.hp -= 0.5  # при столкновении с улиткой хп уменьшаются
         if self.hp <= 0:
             self.kill()
             main_board.change(self.x, self.y)
 
     def kaput(self):
-        self.kill()
+        self.kill()  # капут
 
 
-class Windflower(pygame.sprite.Sprite):
+class Windflower(pygame.sprite.Sprite):  # ветроцветок (наносит урон просто)
     image = plants_images['windflower']
 
     def __init__(self, x, y):
         global sun
-        sun -= 20
+        sun -= 20  # цена
         super().__init__()
         self.x = x
         self.y = y
@@ -203,6 +205,7 @@ class Windflower(pygame.sprite.Sprite):
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
                 self.hp -= 0.5
+                obj.fire(0.1)
         if self.hp <= 0:
             self.kill()
             main_board.change(self.x, self.y)
@@ -211,7 +214,7 @@ class Windflower(pygame.sprite.Sprite):
         self.kill()
 
 
-class Peas(pygame.sprite.Sprite):
+class Peas(pygame.sprite.Sprite):  # класс горошин
     image = plants_images['peas']
 
     def __init__(self, x, y):
@@ -225,21 +228,21 @@ class Peas(pygame.sprite.Sprite):
         self.rect.y = 160 + y * 70
 
     def update(self):
-        self.rect.x += 1
+        self.rect.x += 1  # горошина летает
         if self.rect.x >= 800:
             self.kill()
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
-                obj.kaput()
-                self.kill()
-                print('collide')
+                obj.kaput()  # при столкновении с улиткой горошина исчезает
+                self.kill()  # а улитка теряет хп
+
             main_board.change(self.x, self.y)
 
     def kaput(self):
         self.kill()
 
 
-class Peasflower(pygame.sprite.Sprite):
+class Peasflower(pygame.sprite.Sprite):  # горохострел
     image = plants_images['peasflower']
 
     def __init__(self, x, y):
@@ -257,7 +260,7 @@ class Peasflower(pygame.sprite.Sprite):
         self.shoot = True
         self.hp = 100
 
-    def check_time_to_shoot(self):
+    def check_time_to_shoot(self):  # аналогично подсолнуху, функция стрельбы
 
         time_now = dt.datetime.now()
 
@@ -284,7 +287,7 @@ class Peasflower(pygame.sprite.Sprite):
         self.kill()
 
 
-class Fireflower(pygame.sprite.Sprite):
+class Fireflower(pygame.sprite.Sprite):  # огнецветок (сжигает улиток)
     image_inactive = plants_images['fireflower'][1]
     image_active = plants_images['fireflower'][0]
 
@@ -305,7 +308,10 @@ class Fireflower(pygame.sprite.Sprite):
     def update(self):
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
+                self.image = Fireflower.image_active
                 self.hp -= 0.5
+                obj.fire(0.25)  # сжигает улиток
+
         if self.hp <= 0:
             self.kill()
             main_board.change(self.x, self.y)
@@ -315,7 +321,7 @@ class Fireflower(pygame.sprite.Sprite):
 
 
 class Cactus(pygame.sprite.Sprite):
-    image = plants_images['cactus']
+    image = plants_images['cactus']  # кактус (чисто как защита, много хп)
 
     def __init__(self, x, y):
         global sun
@@ -342,7 +348,7 @@ class Cactus(pygame.sprite.Sprite):
         self.kill()
 
 
-class Snail(pygame.sprite.Sprite):
+class Snail(pygame.sprite.Sprite):  # улитка
     image_1 = enemies_images['snail'][0]
     image_2 = enemies_images['snail'][1]
 
@@ -353,7 +359,7 @@ class Snail(pygame.sprite.Sprite):
         self.mask2 = pygame.mask.from_surface(self.image_2)
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.speed = 1
+        self.speed = 1  # ползет
         self.hp = 30
         self.rect.y = 200 + y * 70
 
@@ -363,9 +369,9 @@ class Snail(pygame.sprite.Sprite):
             if pygame.sprite.collide_mask(self, obj):
                 self.speed = 0
                 self.f = True
-        for obj1 in peases:
+        for obj1 in peases:  # я не знаю что это, это Рома делал
             if pygame.sprite.collide_mask(self, obj1):
-                self.hp = self.hp - 10
+                self.hp = self.hp - 10  # скорее всего проверка на столкновение с растениями и горохом
                 if self.hp == 0:
                     self.kill()
                     enemies.remove(self)
@@ -383,18 +389,42 @@ class Snail(pygame.sprite.Sprite):
         return False
 
     def kaput(self):
-        self.hp -= 10
+        self.hp -= 10  # урон от гороха
         if self.hp <= 0:
+            self.kill()
+
+    def fire(self, x):
+        self.hp -= x
+        if self.hp <= 0:  # урон от огнецветка и ветроцветка
             self.kill()
 
 
 def terminate():
     pygame.quit()
-    sys.exit()
+    sys.exit()  # полный капут
 
 
-def description_screen():
+def description_screen():  # окно с описанием
     def text():
+        intro_text = ["ВРАГИ-ЖУКИ", "",
+                      "Цель игры - продержаться отведенное время, не дав злым улиткам ",
+                      "перейти через поле с растениями.",
+                      "Геймплей: улитки ползают; мы сажаем растения, которые мешают улиткам.",
+                      'У каждого растения есть свои способности и цена.',
+                      'Цена измеряется в солнышках, которые дают подсолнухи.',
+                      'Имеется возможность выбора уровня (время до победы увеличивается).', '', 'Удачи!']
+
+        font = pygame.font.Font(None, 30)
+        text_coord = 50
+        for line in intro_text:
+            string_rendered = font.render(line, True, pygame.Color('white'))
+            intro_rect = string_rendered.get_rect()
+            text_coord += 10
+            intro_rect.top = text_coord
+            intro_rect.x = 10
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+
         but_color = pygame.Color((102, 0, 102))
         pygame.draw.rect(screen, but_color, (300, 500, 200, 50))
         font = pygame.font.Font(None, 40)
@@ -420,16 +450,16 @@ def description_screen():
         clock.tick(FPS)
 
 
-def final_screen(result):
+def final_screen(result):  # окно с результатами
     running = True
 
     for sprite in all_sprites:
         sprite.kill()
     but_color = pygame.Color((102, 0, 102))
     if result:
-        text_f = 'ПОЗДРАВЛЯЕМ! ВЫ ПОБЕДИЛИ!'
+        text_f = 'ВЫ ПОБЕДИЛИ!'
     else:
-        text_f = 'ВЫ ПРОИГРАЛИ!'
+        text_f = 'ВЫ ПРОИГРАЛИ!'  # если улитка доползла до левого края - мы проиграли
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -460,8 +490,8 @@ def final_screen(result):
         clock.tick(FPS)
 
 
-def levels_screen():
-    global level
+def levels_screen():  # окно с выбором уровня (3)
+    global level, time_play
 
     def text(screen):
         font = pygame.font.Font(None, 100)
@@ -508,7 +538,7 @@ def levels_screen():
 
         pygame.draw.rect(screen, but_color, (300, 500, 200, 50))
         font = pygame.font.Font(None, 40)
-        text = font.render('ВЫХОД', True, (255, 255, 255))
+        text = font.render('НАЗАД', True, (255, 255, 255))
         text_w = text.get_width()
         text_h = text.get_height()
         text_x = (200 - text_w) // 2 + 300
@@ -526,17 +556,20 @@ def levels_screen():
                 x, y = event.pos
                 if 300 <= x and x <= 500 and 200 <= y and y <= 250:
                     level = 1  # начинаем игру
+
                 elif 300 <= x and x <= 500 and 300 <= y and y <= 350:
                     level = 2
+
                 elif 300 <= x and x <= 500 and 400 <= y and y <= 450:
                     level = 3
+
                 elif 300 <= x and x <= 500 and 500 <= y and y <= 550:
                     return
         pygame.display.flip()
         clock.tick(FPS)
 
 
-def start_screen():
+def start_screen():  # стартовое окно
     def text(screen):
         font = pygame.font.Font(None, 100)
         but_color = pygame.Color((102, 0, 102))
@@ -630,7 +663,7 @@ def plant(name, x, y, board):  # функция посадки растения
                 peasflowers.add(plant)
 
 
-def random_spawn():
+def random_spawn():  # функия спавна улитки
     name = random.choice(list(enemies_images.keys()))
     x, y = 780, random.randint(0, 4)
     if name == 'snail':
@@ -639,7 +672,7 @@ def random_spawn():
         enemies.add(enemy)
 
 
-def show_sun():
+def show_sun():  # функия показа времени и солнышек
     font = pygame.font.Font(None, 40)
     text = font.render(str(sun), True, (0, 0, 0))
     text_w = text.get_width()
@@ -649,14 +682,22 @@ def show_sun():
     screen.blit(text, (text_x, text_y))
     screen.blit(image_sun, (text_x - 20, text_y + 3))
 
+    text = font.render(f'time to win: {str(time_play)}', True, (0, 0, 0))
+    text_w = text.get_width()
+    text_h = text.get_height()
+    text_x = 500 + (100 - text_w) // 2
+    text_y = 20
+    screen.blit(text, (text_x, text_y))
 
-def play():
+
+def play():  # игра
     running = True
     fps = 30
-    global sun
-    sun = 30
+    global sun, time_play
+    sun = 40  # стартовые солнышки
+    time_play = times[level - 1]
     main_board.change(0, 0, all=True)
-    start_sunflower = Sunflower(0, 2)
+    start_sunflower = Sunflower(0, 2)  # стартовый подсолнух
     all_sprites.add(start_sunflower)
     sunflowers.add(start_sunflower)
     plants.add(start_sunflower)
@@ -675,13 +716,19 @@ def play():
     current_plant = None  # растение которое хотим посадить (в начале - никакое)
     MYEVENTTYPE = pygame.USEREVENT + 1
     pygame.time.set_timer(MYEVENTTYPE, 10000)
+    time_minus = pygame.USEREVENT + 2
+    pygame.time.set_timer(time_minus, 1000)
     while running:
         screen.fill(pygame.Color('grey'))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == MYEVENTTYPE:
-                random_spawn()
+                random_spawn()  # спавн
+            if event.type == time_minus:
+                time_play -= 1  # время не ждет
+                if time_play == 0:
+                    final_screen(True)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 main_board_click = main_board.get_click(event.pos)
                 # проверка что куда садим
@@ -697,12 +744,12 @@ def play():
         all_sprites.update()
         show_sun()
         for obj in sunflowers:
-            obj.check_time_to_sun()
+            obj.check_time_to_sun()  # проверка подсолнухов
         for obj in peasflowers:
-            obj.check_time_to_shoot()
+            obj.check_time_to_shoot()  # проверка горохострелов
 
         for enemy in enemies:
-            if enemy.check_pos():
+            if enemy.check_pos(): #проверка улиток
                 running = False
 
         all_sprites.draw(screen)
