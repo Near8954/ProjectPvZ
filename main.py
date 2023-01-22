@@ -15,6 +15,7 @@ enemies = pygame.sprite.Group()
 plants = pygame.sprite.Group()
 peases = pygame.sprite.Group()
 sun = 30
+level = 1
 
 
 def load_image(name, colorkey=None):  # загрузка изображений
@@ -97,7 +98,10 @@ class Board:
             return False
         return True
 
-    def change(self, x, y):
+    def change(self, x, y, all=False):
+        if all:
+            self.board = [[0] * self.height for _ in range(self.width)]
+            return
         self.board[x][y] = 0
 
 
@@ -175,6 +179,9 @@ class Sunflower(pygame.sprite.Sprite):
             self.kill()
             main_board.change(self.x, self.y)
 
+    def kaput(self):
+        self.kill()
+
 
 class Windflower(pygame.sprite.Sprite):
     image = plants_images['windflower']
@@ -199,6 +206,9 @@ class Windflower(pygame.sprite.Sprite):
         if self.hp <= 0:
             self.kill()
             main_board.change(self.x, self.y)
+
+    def kaput(self):
+        self.kill()
 
 
 class Peas(pygame.sprite.Sprite):
@@ -225,6 +235,9 @@ class Peas(pygame.sprite.Sprite):
         if self.hp <= 0:
             self.kill()
             main_board.change(self.x, self.y)
+
+    def kaput(self):
+        self.kill()
 
 
 class Peasflower(pygame.sprite.Sprite):
@@ -268,6 +281,9 @@ class Peasflower(pygame.sprite.Sprite):
             self.kill()
             main_board.change(self.x, self.y)
 
+    def kaput(self):
+        self.kill()
+
 
 class Fireflower(pygame.sprite.Sprite):
     image_inactive = plants_images['fireflower'][1]
@@ -295,6 +311,9 @@ class Fireflower(pygame.sprite.Sprite):
             self.kill()
             main_board.change(self.x, self.y)
 
+    def kaput(self):
+        self.kill()
+
 
 class Cactus(pygame.sprite.Sprite):
     image = plants_images['cactus']
@@ -320,6 +339,9 @@ class Cactus(pygame.sprite.Sprite):
             self.kill()
             main_board.change(self.x, self.y)
 
+    def kaput(self):
+        self.kill()
+
 
 class Snail(pygame.sprite.Sprite):
     image_1 = enemies_images['snail'][0]
@@ -333,7 +355,7 @@ class Snail(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.speed = 1
-        self.rect.y = 210 + y * 70
+        self.rect.y = 200 + y * 70
 
     def update(self):
         self.f = False
@@ -347,6 +369,15 @@ class Snail(pygame.sprite.Sprite):
         self.rect.x -= self.speed
         if self.rect.x == 0:
             self.kill()
+            final_screen(False)
+
+    def check_pos(self):
+        if self.rect.x == 0:
+            return True
+        return False
+
+    def kaput(self):
+        self.kill()
 
 
 def terminate():
@@ -355,17 +386,144 @@ def terminate():
 
 
 def description_screen():
+    def text():
+        but_color = pygame.Color((102, 0, 102))
+        pygame.draw.rect(screen, but_color, (300, 500, 200, 50))
+        font = pygame.font.Font(None, 40)
+        text = font.render('НАЗАД', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (200 - text_w) // 2 + 300
+        text_y = (50 - text_h) // 2 + 500
+        screen.blit(text, (text_x, text_y))
+
     while True:
 
         screen.fill((119, 221, 119))
+        text()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if 300 <= x and x <= 500 and 500 <= y and y <= 550:
+                    return
+        pygame.display.flip()
+        clock.tick(FPS)
 
+
+def final_screen(result):
+    running = True
+
+    for sprite in all_sprites:
+        sprite.kill()
+    but_color = pygame.Color((102, 0, 102))
+    if result:
+        text_f = 'ПОЗДРАВЛЯЕМ! ВЫ ПОБЕДИЛИ!'
+    else:
+        text_f = 'ВЫ ПРОИГРАЛИ!'
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if 300 <= x and x <= 500 and 500 <= y and y <= 550:
+                    start_screen()
+        screen.fill((119, 221, 119))
+        font = pygame.font.Font(None, 100)
+        pygame.draw.rect(screen, but_color, (300, 500, 200, 50))
+        font = pygame.font.Font(None, 40)
+        text = font.render('НАЗАД', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (200 - text_w) // 2 + 300
+        text_y = (50 - text_h) // 2 + 500
+        screen.blit(text, (text_x, text_y))
+
+        font = pygame.font.Font(None, 100)
+        text = font.render(text_f, True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (800 - text_w) // 2
+        text_y = 200
+        screen.blit(text, (text_x, text_y))
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def levels_screen():
+    global level
+
+    def text(screen):
+        font = pygame.font.Font(None, 100)
+
+        but_color = pygame.Color((102, 0, 102))
+        cur_but_color = pygame.Color((150, 0, 102))
+        if level == 1:
+            pygame.draw.rect(screen, cur_but_color, (300, 200, 200, 50))
+        else:
+            pygame.draw.rect(screen, but_color, (300, 200, 200, 50))
+        font = pygame.font.Font(None, 40)
+        text = font.render('1', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (200 - text_w) // 2 + 300
+        text_y = (50 - text_h) // 2 + 200
+        screen.blit(text, (text_x, text_y))
+
+        if level == 2:
+            pygame.draw.rect(screen, cur_but_color, (300, 300, 200, 50))
+        else:
+            pygame.draw.rect(screen, but_color, (300, 300, 200, 50))
+
+        font = pygame.font.Font(None, 40)
+        text = font.render('2', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (200 - text_w) // 2 + 300
+        text_y = (50 - text_h) // 2 + 300
+        screen.blit(text, (text_x, text_y))
+
+        if level == 3:
+            pygame.draw.rect(screen, cur_but_color, (300, 400, 200, 50))
+        else:
+            pygame.draw.rect(screen, but_color, (300, 400, 200, 50))
+
+        font = pygame.font.Font(None, 40)
+        text = font.render('3', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (200 - text_w) // 2 + 300
+        text_y = (50 - text_h) // 2 + 400
+        screen.blit(text, (text_x, text_y))
+
+        pygame.draw.rect(screen, but_color, (300, 500, 200, 50))
+        font = pygame.font.Font(None, 40)
+        text = font.render('ВЫХОД', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (200 - text_w) // 2 + 300
+        text_y = (50 - text_h) // 2 + 500
+        screen.blit(text, (text_x, text_y))
+
+    while True:
+
+        screen.fill((119, 221, 119))
+        text(screen)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 if 300 <= x and x <= 500 and 200 <= y and y <= 250:
-                    return  # начинаем игру
+                    level = 1  # начинаем игру
+                elif 300 <= x and x <= 500 and 300 <= y and y <= 350:
+                    level = 2
+                elif 300 <= x and x <= 500 and 400 <= y and y <= 450:
+                    level = 3
+                elif 300 <= x and x <= 500 and 500 <= y and y <= 550:
+                    return
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -409,6 +567,15 @@ def start_screen():
         text_y = (50 - text_h) // 2 + 400
         screen.blit(text, (text_x, text_y))
 
+        pygame.draw.rect(screen, but_color, (300, 500, 200, 50))
+        font = pygame.font.Font(None, 40)
+        text = font.render('ВЫХОД', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (200 - text_w) // 2 + 300
+        text_y = (50 - text_h) // 2 + 500
+        screen.blit(text, (text_x, text_y))
+
     while True:
 
         screen.fill((119, 221, 119))
@@ -419,9 +586,13 @@ def start_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 if 300 <= x and x <= 500 and 200 <= y and y <= 250:
-                    return  # начинаем игру
+                    play()  # начинаем игру
+                elif 300 <= x and x <= 500 and 300 <= y and y <= 350:
+                    levels_screen()
                 elif 300 <= x and x <= 500 and 400 <= y and y <= 450:
                     description_screen()
+                elif 300 <= x and x <= 500 and 500 <= y and y <= 550:
+                    terminate()
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -474,7 +645,8 @@ def show_sun():
 def play():
     running = True
     fps = 60
-
+    sun = 30
+    main_board.change(0, 0, all=True)
     start_sunflower = Sunflower(0, 2)
     all_sprites.add(start_sunflower)
     sunflowers.add(start_sunflower)
@@ -519,6 +691,11 @@ def play():
             obj.check_time_to_sun()
         for obj in peasflowers:
             obj.check_time_to_shoot()
+
+        for enemy in enemies:
+            if enemy.check_pos():
+                running = False
+
         all_sprites.draw(screen)
 
         clock.tick(fps)
@@ -536,5 +713,6 @@ if __name__ == '__main__':
     size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
     main_board = Board(10, 5, 50, 200)
+
     start_screen()
     play()
