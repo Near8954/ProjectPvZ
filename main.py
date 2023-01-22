@@ -223,7 +223,6 @@ class Peas(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70 + 5
         self.rect.y = 160 + y * 70
-        self.hp = 100
 
     def update(self):
         self.rect.x += 1
@@ -231,9 +230,9 @@ class Peas(pygame.sprite.Sprite):
             self.kill()
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
-                self.hp -= 0.5
-        if self.hp <= 0:
-            self.kill()
+                obj.kaput()
+                self.kill()
+                print('collide')
             main_board.change(self.x, self.y)
 
     def kaput(self):
@@ -355,6 +354,7 @@ class Snail(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.speed = 1
+        self.hp = 30
         self.rect.y = 200 + y * 70
 
     def update(self):
@@ -383,7 +383,9 @@ class Snail(pygame.sprite.Sprite):
         return False
 
     def kaput(self):
-        self.kill()
+        self.hp -= 10
+        if self.hp <= 0:
+            self.kill()
 
 
 def terminate():
@@ -650,7 +652,8 @@ def show_sun():
 
 def play():
     running = True
-    fps = 60
+    fps = 30
+    global sun
     sun = 30
     main_board.change(0, 0, all=True)
     start_sunflower = Sunflower(0, 2)
