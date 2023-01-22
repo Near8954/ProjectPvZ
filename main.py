@@ -332,7 +332,7 @@ class Snail(pygame.sprite.Sprite):
         self.rect.x = x
         self.speed = 1
         self.hp = 10
-        self.rect.y = 200 + y * 70
+        self.rect.y = 190 + y * 70
 
     def update(self):
         self.f = False
@@ -343,6 +343,7 @@ class Snail(pygame.sprite.Sprite):
         for obj1 in peases:
             if pygame.sprite.collide_mask(self, obj1):
                 self.hp = self.hp - 10
+                print(self.hp)
                 if self.hp == 0:
                     self.kill()
                     enemies.remove(self)
