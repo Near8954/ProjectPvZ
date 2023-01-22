@@ -17,6 +17,7 @@ peases = pygame.sprite.Group()
 sun = 40
 
 
+
 def load_image(name, colorkey=None):  # загрузка изображений
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
@@ -38,7 +39,7 @@ plants_images = {'sunflower': [pygame.transform.scale(load_image('PvZ/1/sunflowe
 # изображения всех растений
 enemies_images = {'snail': [pygame.transform.scale(load_image('PvZ/enemy_1/snail1.png'), (70, 70)),
                             pygame.transform.scale(load_image('PvZ/enemy_1/snail2.png'), (70, 70))]}
-
+# изображения врагов
 
 class Board:
     # создание игрового поля
@@ -46,6 +47,7 @@ class Board:
         self.width = width
         self.height = height
         self.board = [[0] * height for _ in range(width)]
+        global board
 
         # значения по умолчанию
         self.left = left
@@ -92,6 +94,9 @@ class Board:
         if self.board[x][y]:
             return False
         return True
+    
+    def change(self, x, y):
+        self.board[x][y] = 0
 
 
 class ChoiceBoard(Board):  # поле выбора растений
@@ -132,6 +137,8 @@ class Sunflower(pygame.sprite.Sprite):
         global sun
         sun -= 10
         self.hp = 100
+        self.x = x
+        self.y = y
         super().__init__()
         self.mask = pygame.mask.from_surface(self.image)
         self.mask2 = pygame.mask.from_surface(self.image2)
@@ -162,6 +169,7 @@ class Sunflower(pygame.sprite.Sprite):
                 self.hp -= 0.5
         if self.hp <= 0:
             self.kill()
+            board.change(self.x, self.y)
         print(self.hp)
 
 class Windflower(pygame.sprite.Sprite):
