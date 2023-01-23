@@ -14,6 +14,7 @@ peasflowers = pygame.sprite.Group()  # горохострелов
 enemies = pygame.sprite.Group()  # улиток
 plants = pygame.sprite.Group()
 peases = pygame.sprite.Group()  # горошин
+windflowers = pygame.sprite.Group()
 sun = 30  # стартовое количество солнышек
 level = 1  # уровень (изначально 1)
 times = [120, 240, 300]
@@ -199,12 +200,12 @@ class Windflower(pygame.sprite.Sprite):  # ветроцветок (наноси�
         self.rect = self.image.get_rect()
         self.rect.x = 50 + x * 70
         self.rect.y = 200 + y * 70
-        self.hp = 100
+        self.hp = 7
 
     def update(self):
         for obj in enemies:
             if pygame.sprite.collide_mask(self, obj):
-                self.hp -= 0.5
+                self.hp -= 1
                 obj.fire(0.1)
         if self.hp <= 0:
             self.kill()
@@ -393,6 +394,9 @@ class Snail(pygame.sprite.Sprite):  # улитка
                 if self.hp == 0:
                     self.kill()
                     enemies.remove(self)
+        for obj in windflowers:
+            if pygame.sprite.collide_mask(self, obj):
+                self.rect.x += 50
         if not self.f:
             self.speed = 1
             self.f = False
@@ -660,10 +664,13 @@ def plant(name, x, y, board):  # функция посадки растения
     if board.check_cell(x, y):
         if name == 'sunflower' and sun >= 10:
             plant = Sunflower(x, y)
+            sunflowers.add(plant)
         elif name == 'windflower' and sun >= 20:
             plant = Windflower(x, y)
+            windflowers.add(plant)
         elif name == 'peasflower' and sun >= 30:
             plant = Peasflower(x, y)
+            peasflowers.add(plant)
         elif name == 'fireflower' and sun >= 40:
             plant = Fireflower(x, y)
         elif name == 'cactus' and sun >= 50:
@@ -675,10 +682,6 @@ def plant(name, x, y, board):  # функция посадки растения
             board.plant(plant, (x, y))
             all_sprites.add(plant)
             plants.add(plant)
-            if name == 'sunflower':
-                sunflowers.add(plant)
-            elif name == 'peasflower':
-                peasflowers.add(plant)
 
 
 def random_spawn():  # функия спавна улитки
@@ -736,7 +739,7 @@ def play():  # игра
     main_board.plant(start_sunflower, (0, 2))
     current_plant = None  # растение которое хотим посадить (в начале - никакое)
     MYEVENTTYPE = pygame.USEREVENT + 1
-    pygame.time.set_timer(MYEVENTTYPE, 10000)
+    pygame.time.set_timer(MYEVENTTYPE, 7500)
     time_minus = pygame.USEREVENT + 2
     pygame.time.set_timer(time_minus, 1000)
     while running:
