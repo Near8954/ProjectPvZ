@@ -30,7 +30,7 @@ def load_image(name, colorkey=None):  # загрузка изображений
         sys.exit()
     image = pygame.image.load(fullname)
     return image
-
+background_grasses = [load_image('background_grass.png'), load_image('background_dead_grass.png'), load_image('background_extremly_dead_grass.png')]
 
 plants_images = {'sunflower': [pygame.transform.scale(load_image('PvZ/1/sunflower.png'), (70, 70)),
                                pygame.transform.scale(load_image('PvZ/1/sunflower2.png'), (70, 70))],
@@ -167,7 +167,7 @@ class Sunflower(pygame.sprite.Sprite):  # подсолнух
 
         if delta % 5 == 0 and delta and self.get_sun:
             self.image = Sunflower.image2
-            sun += 5
+            sun += 5 + (level-1)
             self.get_sun = False
         elif delta % 5 == 1:
             self.image = Sunflower.image
@@ -365,8 +365,8 @@ class Snail(pygame.sprite.Sprite):  # улитка
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = 200 + y * 70
-        self.speed = 1
-        self.hp = 30        
+        self.speed = 1 + (level-1)
+        self.hp = 30 + (level-1) * 10     
     
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, 
@@ -742,12 +742,12 @@ def play():  # игра
                              plants_images['fireflower'][0],
                              plants_images['cactus']])
 
-    background_grass = load_image('background_grass.png')
+    background_grass = background_grasses[level-1]
 
     main_board.plant(start_sunflower, (0, 2))
     current_plant = None  # растение которое хотим посадить (в начале - никакое)
     MYEVENTTYPE = pygame.USEREVENT + 1
-    pygame.time.set_timer(MYEVENTTYPE, 7500)
+    pygame.time.set_timer(MYEVENTTYPE, 7500 - 1000 * (level-1))
     time_minus = pygame.USEREVENT + 2
     pygame.time.set_timer(time_minus, 1000)
     while running:
