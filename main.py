@@ -500,13 +500,21 @@ def final_screen(result):  # окно с результатами
         text_x = (200 - text_w) // 2 + 300
         text_y = (50 - text_h) // 2 + 500
         screen.blit(text, (text_x, text_y))
-
+        
         font = pygame.font.Font(None, 100)
         text = font.render(text_f, True, (255, 255, 255))
         text_w = text.get_width()
         text_h = text.get_height()
         text_x = (800 - text_w) // 2
         text_y = 200
+        screen.blit(text, (text_x, text_y))
+        
+        font = pygame.font.Font(None, 90)
+        text = font.render('Вы набрали '+str(times[level-1]-time_play) + ' очков', True, (255, 255, 255))
+        text_w = text.get_width()
+        text_h = text.get_height()
+        text_x = (800 - text_w) // 2
+        text_y = 275
         screen.blit(text, (text_x, text_y))
         pygame.display.flip()
         clock.tick(FPS)
